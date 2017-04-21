@@ -1,52 +1,67 @@
 grammar compilador;
 
-programa : package_expressao import_expressao* class_expressao*;
+application : package_exp? import_exp* class_exp*;
 
-package_expressao: PACKAGEPR IDENTIFICADOR PV;
-import_expressao : IMPORTPR IDENTIFICADOR (PONTO IDENTIFICADOR)* PV;
+package_exp: PACKAGEPR IDENTIFICADOR PV;
+import_exp : IMPORTPR IDENTIFICADOR (PONTO IDENTIFICADOR)* PV;
 
-class_expressao : PUBLICPR CLASSPR IDENTIFICADOR AC (metodo|atributo)* FC; 
+class_exp : PUBLICPR CLASSPR IDENTIFICADOR AC (exps)* FC;
 
-metodo : visibilidade tipo_retorno IDENTIFICADOR AP parametros? FP AC expressoes* FC;
-atributo: visibilidade tipo IDENTIFICADOR PV;
-tipo_retorno : tipo | VOIDPR;
-visibilidade : PUBLICPR | PRIVATEPR;
-parametros : tipo IDENTIFICADOR (V tipo IDENTIFICADOR)*;
+method_declaration : visibility tipo_retorno IDENTIFICADOR AP parametros? FP AC exps* FC;
 
-expressoes : declaracao | expressao | if_expressao | 
-             while_expressao | break_expressao | return_expressao | 
-             print_expressao | do_while_expressao | system_expressao;
+tipo_retorno : type | VOIDPR;
+visibility : PUBLICPR | PRIVATEPR;
+parametros : type IDENTIFICADOR (V type IDENTIFICADOR)*;
 
-declaracao : tipo IDENTIFICADOR (OP_ATRIBUICAO valor)? PV |
-             tipo ACOL FCOL IDENTIFICADOR OP_ATRIBUICAO NEWPR tipo ACOL valor FCOL PV;
+methods : switch_exp| if_exp | while_exp | do_while_exp | methodo_call PV | for_exp;
 
-tipo : INTPR | FLOATPR | DOUBLEPR | CHARPR | STRINGPR;
+exps: methods | return_exp | system_println_exp | exp_math_or_att  | var_declaration | method_declaration | methodo_call PV;
 
-valor : NUMERO | IDENTIFICADOR;
+var_declaration : visibility? type IDENTIFICADOR (OP_ATRIBUICAO value)? PV |
+array | object;
 
-expressao : IDENTIFICADOR OP_ATRIBUICAO valor OP_ARITMETICO valor PV |
-            IDENTIFICADOR OP_ATRIBUICAO valor PV;
+array : visibility? type ACOL FCOL IDENTIFICADOR OP_ATRIBUICAO NEWPR type ACOL value FCOL PV;
 
-if_expressao : IFPR AP expr_logica FP AC expressoes* FC
-               (ELSEPR IFPR AP expr_logica FP AC expressoes* FC)*
-               (ELSEPR AC expressoes*  FC)?;
+array_call : IDENTIFICADOR ACOL (IDENTIFICADOR | NUMERO) FCOL;
 
-do_while_expressao: DOPR AC (expressoes)* FC WHILEPR AP expr_logica FP PV;
+object : visibility? IDENTIFICADOR IDENTIFICADOR (OP_ATRIBUICAO NEWPR IDENTIFICADOR AP((TIPO VALOR (V TIPO VALOR)*)?)FP)? PV;
 
-while_expressao : WHILEPR AP expr_logica FP AC expressoes* FC;
+methodo_call : IDENTIFICADOR PONTO IDENTIFICADOR (PONTO IDENTIFICADOR)* (AP? (value | IDENTIFICADOR |
+ array_call)? FP?)? | IDENTIFICADOR AP FP;
 
-for_expressao : FORPR AP parentesis_for  FP AC expressoes* FC ;
-parentesis_for: tipo IDENTIFICADOR OP_ATRIBUICAO valor PV IDENTIFICADOR OP_LOGICO valor PV IDENTIFICADOR OP_INCREMENTO;
+type : INTPR | FLOATPR | DOUBLEPR | CHARPR | STRINGPR | object;
 
-break_expressao : BREAKPR PV;
+value : NUMERO | IDENTIFICADOR | ASPAS IDENTIFICADOR ASPAS | IDENTIFICADOR ACOL IDENTIFICADOR ACOL;
 
-return_expressao : return_expression;
-return_expression: RETURNPR valor PV| RETURNPR THISPR PONTO IDENTIFICADOR PV;
+exp_math_or_att : IDENTIFICADOR OP_ATRIBUICAO value OP_ARITMETICO value PV |
+            IDENTIFICADOR OP_ATRIBUICAO value PV | methodo_call OP_ATRIBUICAO IDENTIFICADOR PV;
 
-expr_logica : valor OP_LOGICO valor;
-system_expressao: SYSTEMPR (PONTO sytem_tipo PONTO print_expressao)* PV;
+if_exp : IFPR AP logical_exp FP AC exps* FC
+               (ELSEPR IFPR AP logical_exp FP AC exps* FC)*
+               (ELSEPR AC exps*  FC)?;
+
+do_while_exp: DOPR AC (exps)* FC WHILEPR AP logical_exp FP PV;
+
+while_exp : WHILEPR AP logical_exp FP AC exps* FC;
+
+for_exp : FORPR AP parentesis_for FP AC exps* FC ;
+parentesis_for: type? IDENTIFICADOR OP_ATRIBUICAO? value? PV IDENTIFICADOR OP_LOGICO (value | IDENTIFICADOR | methodo_call)
+PV IDENTIFICADOR OP_INCREMENTO;
+
+break_exp : BREAKPR PV;
+
+return_exp: RETURNPR value PV| RETURNPR methodo_call PV;
+
+logical_exp : value OP_LOGICO value (OP_LOGICO value OP_LOGICO value)*;
+system_println_exp: SYSTEMPR (PONTO sytem_tipo PONTO print_exp)* PV;
 sytem_tipo: OUTPR;
-print_expressao: PRINTPR AP IDENTIFICADOR FP;
+print_exp: PRINTPR AP IDENTIFICADOR ACOL? IDENTIFICADOR? FCOL? FP;
+
+this_exp: THISPR PONTO IDENTIFICADOR OP_ATRIBUICAO IDENTIFICADOR PV;
+
+switch_exp: SWITCHPR AP IDENTIFICADOR FP AC case_exp* FC;
+
+case_exp: CASEPR NUMERO DOIS_PONTOS exps BREAKPR PV ;
 
 AP : '(';
 FP : ')';
@@ -55,7 +70,7 @@ FC : '}';
 ACOL: '[';
 FCOL: ']';
 OP_INCREMENTO: '++';
-OP_LOGICO : '==' | '<' | '>' | '<=' | '>=';
+OP_LOGICO : '==' | '<' | '>' | '<=' | '>=' | '&&';
 OP_ARITMETICO : '*' | '-' | '+';
 PV : ';';
 V : ',';
@@ -86,7 +101,10 @@ SYSTEMPR: 'System';
 OUTPR: 'out';
 PRINTPR: 'println';
 THISPR: 'this';
+SETPR: 'set';
+ASPAS : '"';
+DOIS_PONTOS: ':';
+SWITCHPR : 'switch';
 
 //WS : [ \t\r\n]+ -> skip;
-WS  :  [ \t\r\n\u000C]+ -> skip
-    ;
+WS  :  [ \t\r\n\u000C]+ -> skip;
