@@ -1,0 +1,6 @@
+import com.teste;
+import com.teste.z;
+
+public class Teste {
+
+}

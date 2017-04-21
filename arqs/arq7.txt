@@ -1,0 +1,24 @@
+package teste;
+
+public class Pessoa {
+
+	private String nome;
+	private int idade;
+
+	public void setNome()  {
+		this.nome = nome;
+	}
+
+	public String getNome(String nome) {
+		return this.nome;
+	}
+
+	public void setIdade()  {
+		this.idade = idade;
+	}
+
+	public int getIdade(int idade) {
+		return this.idade;
+	}
+
+}

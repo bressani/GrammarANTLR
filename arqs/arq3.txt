@@ -1,0 +1,15 @@
+package teste;
+
+import com.teste;
+import com.teste.z;
+
+public class Teste {
+
+	public void teste() {
+		int x = 10;
+		while (x < 10) {
+			x = x + 20;
+		}
+	}
+
+}

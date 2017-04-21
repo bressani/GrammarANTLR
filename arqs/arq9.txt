@@ -1,0 +1,19 @@
+package teste;
+
+import com.teste;
+import com.teste.z;
+
+public class Teste {
+
+	public void teste() {
+		int x  = 10;
+		switch(x) {
+			case 0: System.out.println("0");
+				break;
+			case 1: System.out.println("1");
+				break;
+		}
+
+	}
+
+}
